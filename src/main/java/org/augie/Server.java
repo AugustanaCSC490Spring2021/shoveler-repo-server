@@ -86,20 +86,23 @@ public class Server {
         		}
 	        	
 	        	if (doesRoomExist) {
-	        		lobbyTable.get(roomCode).startGame();
-	        		
-		        	players.add(new Player(
+	        		Player host = lobbyTable.get(roomCode);
+	        		host.startGame();
+	        		host.setClient(new Player(
 		        			id, 
 							jsonObject.getString("name"), 
 							false, 
 							seed,
-							roomCode)
-		        			);
+							roomCode
+							));
+	        		
+		        	players.add(host.getClient());
 		        	
 		        	JSONReply = new JSONObject()
 							.put("response", "OK")
 							.put("id", id)
 							.put("seed", seed)
+							.put("enemyName", host.getName())
 							.toString();
 		        	
 	        	} else {
@@ -113,10 +116,12 @@ public class Server {
 	        case "ShouldStart":
 	        	roomCode = jsonObject.getString("roomCode");
 	        	
-        		if (lobbyTable.get(roomCode) != null) {
+	        	Player host = lobbyTable.get(roomCode);
+        		if (host != null) {
         			if (lobbyTable.get(roomCode).shouldStart()) {
         				JSONReply = new JSONObject()
 								.put("response", "Yes")
+								.put("enemyName", host.getName())
 								.toString();
         			}else {
         				JSONReply = new JSONObject()
@@ -139,8 +144,8 @@ public class Server {
 	        		// Determine if the submitter is host and apply their time/score to
 	        		// the host's object.
 		        	if (isHost) {
-		        		getHost.setThisTime(time);
-		        		getHost.setThisScore(score);
+		        		getHost.setTime(time);
+		        		getHost.setScore(score);
 		        		
 		        		// Check if other player is finished yet
 		        		if (getHost.getClientTime() == 0) {
@@ -160,15 +165,15 @@ public class Server {
 		        		getHost.setClientScore(score);
 		        		
 		        		// Check if other player is finished yet
-		        		if (getHost.getThisTime() == 0) {
+		        		if (getHost.getTime() == 0) {
 		        			JSONReply = new JSONObject()
 									.put("response", "NotDone")
 									.toString();
 		        		}else {
 		        			JSONReply = new JSONObject()
 									.put("response", "Done")
-									.put("enemyTime", getHost.getThisTime())
-									.put("enemyScore", getHost.getThisScore())
+									.put("enemyTime", getHost.getTime())
+									.put("enemyScore", getHost.getScore())
 									.toString();
 		        		}
 		        	}
@@ -199,12 +204,13 @@ class Player {
 	boolean isHost = false;
 	private int seed;
 	private String roomCode;
+	private long score;
+	private long time = 0;
 	private boolean hasStarted = false;
+	private Player client;
 	
-	private long thisScore;
-	private long clientScore;
-	private long thisTime = 0;
-	private long clientTime = 0;
+	//private long clientScore;
+	//private long clientTime = 0;
 	
 	
 	public Player(long id, String name, boolean isHost, int seed, String roomCode) {
@@ -223,6 +229,10 @@ class Player {
 		return hasStarted;
 	}
 	
+	public String getName() {
+		return this.name;
+	}
+	
 	public String getRoomCode() {
 		return roomCode;
 	}
@@ -231,36 +241,44 @@ class Player {
 		return seed;
 	}
 	
-	public long getThisScore() {
-		return thisScore;
+	public long getScore() {
+		return score;
 	}
 
 	public long getClientScore() {
-		return clientScore;
+		return client.getScore();
 	}
 	
-	public long getThisTime() {
-		return thisTime;
+	public long getTime() {
+		return time;
 	}
 	
 	public long getClientTime() {
-		return clientTime;
+		return client.getTime();
 	}
 	
-	public void setThisScore(long thisScore) {
-		this.thisScore = thisScore;
+	public void setScore(long score) {
+		this.score = score;
 	}
 
 	public void setClientScore(long clientScore) {
-		this.clientScore = clientScore;
+		client.setScore(clientScore);
 	}
 	
-	public void setThisTime(long thisTime) {
-		this.thisTime = thisTime;
+	public void setTime(long thisTime) {
+		this.time = thisTime;
 	}
 	
 	public void setClientTime(long clientTime) {
-		this.clientTime = clientTime;
+		client.setTime(clientTime);;
+	}
+	
+	public void setClient(Player client) {
+		this.client = client;
+	}
+	
+	public Player getClient() {
+		return this.client;
 	}
 }
 
