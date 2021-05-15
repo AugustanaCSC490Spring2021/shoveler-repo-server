@@ -52,8 +52,11 @@ public class Server {
 	        case "NewLobby":
 	        	// Create new player with room code
 	        	id = new Random().nextLong() & Long.MAX_VALUE;
-	        	// TODO: Make random room codes
-	        	roomCode = "TEMPROOMCODE";
+	        	// Make sure random room code does not already exist
+	        	roomCode = String.valueOf(new Random().nextInt(9999));
+	        	while(lobbyTable.get(roomCode) != null) {
+	        		roomCode = String.valueOf(new Random().nextInt(9999));
+	        	}
 	        	
 	        	Player newPlayer = new Player(
 	        			id, 
