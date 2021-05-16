@@ -40,8 +40,6 @@ public class Server {
 	        System.out.println("Server received: " + received);
 	        
 	        JSONObject jsonObject = new JSONObject(received);
-	        //System.out.println(jsonObject);
-	        
 	        String JSONReply = new JSONObject().put("response", "bad").toString();
 					
 	        long id;
@@ -63,6 +61,7 @@ public class Server {
 						jsonObject.getString("name"), 
 						true, 
 						jsonObject.getInt("seed"),
+						jsonObject.getInt("difficulty"),
 						roomCode);
 	        	
 	        	players.add(newPlayer);
@@ -82,7 +81,6 @@ public class Server {
 	        	doesRoomExist = false;
         		if (lobbyTable.get(roomCode) != null) {
         			doesRoomExist = true;
-        			seed = lobbyTable.get(roomCode).getSeed();
         		}
 	        	
 	        	if (doesRoomExist) {
@@ -92,7 +90,8 @@ public class Server {
 		        			id, 
 							jsonObject.getString("name"), 
 							false, 
-							seed,
+							host.getSeed(),
+							host.getDifficulty(),
 							roomCode
 							));
 	        		
@@ -102,6 +101,7 @@ public class Server {
 							.put("response", "OK")
 							.put("id", id)
 							.put("seed", seed)
+							.put("difficulty", host.getDifficulty())
 							.put("enemyName", host.getName())
 							.toString();
 		        	
@@ -203,21 +203,19 @@ class Player {
 	private String name;
 	boolean isHost = false;
 	private int seed;
+	private int difficulty;
 	private String roomCode;
 	private long score;
 	private long time = 0;
 	private boolean hasStarted = false;
 	private Player client;
 	
-	//private long clientScore;
-	//private long clientTime = 0;
-	
-	
-	public Player(long id, String name, boolean isHost, int seed, String roomCode) {
+	public Player(long id, String name, boolean isHost, int seed, int difficulty, String roomCode) {
 		this.id = id;
 		this.name = name;
 		this.isHost = isHost;
 		this.seed = seed;
+		this.difficulty = difficulty;
 		this.roomCode = roomCode;
 	}
 	
@@ -239,6 +237,10 @@ class Player {
 	
 	public int getSeed() {
 		return seed;
+	}
+	
+	public int getDifficulty() {
+		return this.difficulty;
 	}
 	
 	public long getScore() {
