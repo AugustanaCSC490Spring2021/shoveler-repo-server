@@ -1,3 +1,21 @@
+/**
+ * This program is the server manager for the Shoveler game project as a part
+ * of the Augustana CSC-490 Senior Project Spring 2021. You can find more information
+ * by using the following links.
+ * 
+ *  https://github.com/AugustanaCSC490Spring2021/shoveler-repo-server
+ *  https://github.com/AugustanaCSC490Spring2021/shoveler-repo
+ *  
+ *  The code for sending and receiving data between C# and Java was borrowed by
+ *  damix911 from Stackoverflow. From what I understand, the code attaches the message
+ *  length to the beginning of the message. Then, the otherside makes sure to grab the 
+ *  whole message before continuing. Thanks damix! 
+ *  https://stackoverflow.com/questions/14824491/can-i-communicate-between-java-and-c-sharp-using-just-sockets/14825061
+ *  
+ * @author Landen
+ *
+ */
+
 package org.augie;
 
 import java.io.*;
@@ -9,9 +27,8 @@ import java.util.Random;
 import org.json.*;
 
 public class Server {
-	
-	
 	public static void main(String[] args) throws IOException {
+		// Here we create a server socket listening on the provided port
 		if (args.length != 1) {
             System.err.println("Usage: java Server <port number>");
             System.exit(1);
@@ -23,7 +40,15 @@ public class Server {
 		Hashtable<String, Player> lobbyTable = new Hashtable<String, Player>();
         ServerSocket serverSocket = new ServerSocket(portNumber);
         
+        /**
+         * This is the main loop for the game server. Inside this loop, we wait
+         * for a new connection to reach the server, we then respond with the 
+         * appropriate response via the switch statement below. After the message
+         * is sent, we close the client socket and restart the loop, waiting for
+         * a new connection.
+         */
         while(true) {
+        	// .accept() is a blocking method.
 	        Socket socket = serverSocket.accept();
 	        InputStream is = socket.getInputStream();
 	        OutputStream os = socket.getOutputStream();
@@ -39,6 +64,8 @@ public class Server {
 	
 	        System.out.println("Server received: " + received);
 	        
+	        // If we are unable to find a proper action via the switch statement, 
+	        // we default to a "bad" response.
 	        JSONObject jsonObject = new JSONObject(received);
 	        String JSONReply = new JSONObject().put("response", "bad").toString();
 					
@@ -46,10 +73,22 @@ public class Server {
 	        String roomCode;
 	        int seed = 0;
 	        boolean doesRoomExist = false;
+	        
+	        /**
+	         * Each request send by the client is in a JSON format. There is
+	         * always an "action" value that is sent. Here we use a switch statement
+	         * to determine what data needs to be saved/sent back to the player.
+	         */
 	        switch( jsonObject.getString("action") ) {
+	        /**
+	         * When creating a lobby we do a couple things. First, we create a new
+	         * Player object for the host. Next, we create a new room code that
+	         * the other player can use to connect. Finally, we send the room code
+	         * back to the host player. 
+	         */
 	        case "NewLobby":
-	        	// Create new player with room code
 	        	id = new Random().nextLong() & Long.MAX_VALUE;
+	        	
 	        	// Make sure random room code does not already exist
 	        	roomCode = String.valueOf(new Random().nextInt(9999));
 	        	while(lobbyTable.get(roomCode) != null) {
@@ -73,6 +112,9 @@ public class Server {
 	    						.put("roomCode", roomCode)
 	    						.toString();
 	        	break;
+	        /**
+	         * Join room 
+	         */
 	        case "JoinRoom":
 	        	// Connect a player to a room
 	        	id = new Random().nextLong() & Long.MAX_VALUE;
@@ -198,10 +240,17 @@ public class Server {
 	}
 }
 
+/**
+ * This is a utility class for tracking new player data. If a player is marked
+ * as a host, they will manage all important variables relating to the lobby such as
+ * seed, difficulty, etc.
+ * @author Landen
+ *
+ */
 class Player {
 	private long id;
 	private String name;
-	boolean isHost = false;
+	private boolean isHost = false;
 	private int seed;
 	private int difficulty;
 	private String roomCode;
@@ -209,6 +258,7 @@ class Player {
 	private long time = 0;
 	private boolean hasStarted = false;
 	private Player client;
+	
 	
 	public Player(long id, String name, boolean isHost, int seed, int difficulty, String roomCode) {
 		this.id = id;
@@ -219,69 +269,41 @@ class Player {
 		this.roomCode = roomCode;
 	}
 	
-	public void startGame() {
-		this.hasStarted = true;
-	}
+	public void startGame() { this.hasStarted = true; }
 	
-	public boolean shouldStart() {
-		return hasStarted;
-	}
+	public boolean shouldStart() { return this.hasStarted; }
 	
-	public String getName() {
-		return this.name;
-	}
+	public void setHost(boolean isHost) { this.isHost = isHost; }
 	
-	public String getRoomCode() {
-		return roomCode;
-	}
-	
-	public int getSeed() {
-		return seed;
-	}
-	
-	public int getDifficulty() {
-		return this.difficulty;
-	}
-	
-	public long getScore() {
-		return score;
-	}
+	public void setScore(long score) { this.score = score; }
 
-	public long getClientScore() {
-		return client.getScore();
-	}
+	public void setClientScore(long clientScore) { client.setScore(clientScore); }
 	
-	public long getTime() {
-		return time;
-	}
+	public void setTime(long thisTime) { this.time = thisTime; }
 	
-	public long getClientTime() {
-		return client.getTime();
-	}
+	public void setClientTime(long clientTime) { client.setTime(clientTime); }
 	
-	public void setScore(long score) {
-		this.score = score;
-	}
+	public void setClient(Player client) { this.client = client; }
+	
+	public Player getClient() { return this.client; }
+	
+	public boolean getIfHost() { return this.isHost; }
+	
+	public String getName() { return this.name; }
+	
+	public String getRoomCode() { return this.roomCode; }
+	
+	public int getSeed() { return this.seed; }
+	
+	public int getDifficulty() { return this.difficulty; }
+	
+	public long getScore() { return this.score; }
 
-	public void setClientScore(long clientScore) {
-		client.setScore(clientScore);
-	}
+	public long getClientScore() { return client.getScore(); }
 	
-	public void setTime(long thisTime) {
-		this.time = thisTime;
-	}
+	public long getTime() { return this.time; }
 	
-	public void setClientTime(long clientTime) {
-		client.setTime(clientTime);;
-	}
-	
-	public void setClient(Player client) {
-		this.client = client;
-	}
-	
-	public Player getClient() {
-		return this.client;
-	}
+	public long getClientTime() { return client.getTime(); }
 }
 
 
