@@ -142,7 +142,7 @@ public class Server {
 		        	JSONReply = new JSONObject()
 							.put("response", "OK")
 							.put("id", id)
-							.put("seed", seed)
+							.put("seed", host.getSeed())
 							.put("difficulty", host.getDifficulty())
 							.put("enemyName", host.getName())
 							.toString();
