@@ -91,8 +91,13 @@ public class Server {
 	        	
 	        	// Make sure random room code does not already exist
 	        	roomCode = String.valueOf(new Random().nextInt(9999));
-	        	while(lobbyTable.get(roomCode) != null) {
-	        		roomCode = String.valueOf(new Random().nextInt(9999));
+	        	Player selectedLobby = lobbyTable.get(roomCode);
+	        	while(selectedLobby != null) {
+	        		if(selectedLobby.getTime() > 0 && selectedLobby.getClientTime() > 0) {
+	        			lobbyTable.remove(roomCode);
+	        		}else {
+	        			roomCode = String.valueOf(new Random().nextInt(9999));
+	        		}
 	        	}
 	        	
 	        	Player newPlayer = new Player(
