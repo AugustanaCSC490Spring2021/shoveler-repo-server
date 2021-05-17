@@ -179,7 +179,7 @@ public class Server {
 	        	long time = jsonObject.getLong("time");
 	        	long score = jsonObject.getLong("score");
 	        	roomCode = jsonObject.getString("roomCode");
-	        	
+	        	boolean hasDied = jsonObject.getBoolean("hasDied");
 	        	
 	        	Player getHost = lobbyTable.get(roomCode);
 	        	if (getHost != null) {
@@ -188,6 +188,7 @@ public class Server {
 		        	if (isHost) {
 		        		getHost.setTime(time);
 		        		getHost.setScore(score);
+		        		getHost.setHasDied(hasDied);
 		        		
 		        		// Check if other player is finished yet
 		        		if (getHost.getClientTime() == 0) {
@@ -199,12 +200,14 @@ public class Server {
 									.put("response", "Done")
 									.put("enemyTime", getHost.getClientTime())
 									.put("enemyScore", getHost.getClientScore())
+									.put("enemyDeath", getHost.getClientDeath())
 									.toString();
 		        		}
 		        	// If not Host
 		        	}else {
 		        		getHost.setClientTime(time);
 		        		getHost.setClientScore(score);
+		        		getHost.setClientDeath(hasDied);
 		        		
 		        		// Check if other player is finished yet
 		        		if (getHost.getTime() == 0) {
@@ -216,6 +219,7 @@ public class Server {
 									.put("response", "Done")
 									.put("enemyTime", getHost.getTime())
 									.put("enemyScore", getHost.getScore())
+									.put("enemyDeath", getHost.getIfHasDied())
 									.toString();
 		        		}
 		        	}
@@ -257,6 +261,7 @@ class Player {
 	private long score;
 	private long time = 0;
 	private boolean hasStarted = false;
+	private boolean hasDied = false;
 	private Player client;
 	
 	
@@ -275,6 +280,10 @@ class Player {
 	
 	public void setHost(boolean isHost) { this.isHost = isHost; }
 	
+	public void setHasDied(boolean hasDied) { this.hasDied = hasDied; }
+	
+	public void setClientDeath(boolean hasDied) { this.client.setHasDied(hasDied); }
+	
 	public void setScore(long score) { this.score = score; }
 
 	public void setClientScore(long clientScore) { client.setScore(clientScore); }
@@ -288,6 +297,8 @@ class Player {
 	public Player getClient() { return this.client; }
 	
 	public boolean getIfHost() { return this.isHost; }
+	
+	public boolean getIfHasDied() { return this.hasDied; }
 	
 	public String getName() { return this.name; }
 	
@@ -303,7 +314,9 @@ class Player {
 	
 	public long getTime() { return this.time; }
 	
-	public long getClientTime() { return client.getTime(); }
+	public long getClientTime() { return this.client.getTime(); }
+	
+	public boolean getClientDeath() { return this.client.getIfHasDied(); }
 }
 
 
