@@ -168,7 +168,6 @@ public class Server {
         			if (lobbyTable.get(roomCode).shouldStart()) {
         				JSONReply = new JSONObject()
 								.put("response", "Yes")
-								.put("enemyName", host.getName())
 								.toString();
         			}else {
         				JSONReply = new JSONObject()
@@ -206,6 +205,7 @@ public class Server {
 									.put("enemyTime", getHost.getClientTime())
 									.put("enemyScore", getHost.getClientScore())
 									.put("enemyDeath", getHost.getClientDeath())
+									.put("enemyName", getHost.getClient().getName())
 									.toString();
 		        		}
 		        	// If not Host
@@ -225,6 +225,7 @@ public class Server {
 									.put("enemyTime", getHost.getTime())
 									.put("enemyScore", getHost.getScore())
 									.put("enemyDeath", getHost.getIfHasDied())
+									.put("enemyName", getHost.getName())
 									.toString();
 		        		}
 		        	}
