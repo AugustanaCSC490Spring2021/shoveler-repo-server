@@ -11,7 +11,7 @@
       <configuration>
         <archive>
           <manifest>
-            <mainClass>fully.qualified.MainClass</mainClass>
+            <mainClass>org.augie.Server</mainClass>
           </manifest>
         </archive>
         <descriptorRefs>
